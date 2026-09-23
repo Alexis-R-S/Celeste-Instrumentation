@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <CelesteDirectory>C:\Program Files (x86)\Steam\steamapps\common\Celeste</CelesteDirectory>
+  </PropertyGroup>
+</Project>
