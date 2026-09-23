@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<GlobalParameters xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Enabled>true</Enabled>
+  <DebugRendering>true</DebugRendering>
+  <GamespeedMultiplier>1</GamespeedMultiplier>
+  <Headless>false</Headless>
+</GlobalParameters>

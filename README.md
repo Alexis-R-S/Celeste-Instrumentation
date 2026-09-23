@@ -1,93 +1,98 @@
-# Celeste Instrumentation
+# Tutoriel de mise en place d'un agent sur Céleste
 
-This project aims to provide an instrumentation interface for the game Celeste.  
-It was originally created to train AI agents (see [Celeste-NEAT](https://github.com/hdrien0/Celeste-NEAT)).
+## Étape 1 : Prérequis
 
-## Description
+- Windows : le mod fonctionne sur la version FNA de Céleste.
+- Céleste acheté sur Steam ou itch.io (Version FNA = version Windows). Il peut être installé depuis d'autres sources mais je ne peux pas garantir que tout fonctionne.
+- Python 3.14
+- dnSpy
+- Celeste-Instrumentation
+- Visual Studio
 
-### Project structure
+J'ai aussi installé ceci durant mes tests, je n'ai pas encore déterminé si ces logiciels sont nécessaires ou non :
+- Microsoft XNA Framework Redistribuatable 4.0
+- Microsoft XNA Framework Redistribuatable 4.0 Refresh
+- Microsoft XNA Game Studio Platform Tools
 
-The project is comprised of two main parts :
-* C# code consisting of new classes and [Harmony](https://github.com/pardeike/Harmony) patches of some game classes (`CelesteInstrumentation` folder)
-* A python module to communicate with the instrumented game (`CelestePythonInterface` folder)
+### Installer Celeste FNA sur Steam
 
-### How it works
+Sur Steam, aller dans Bibliothèque > Celeste > La roue dentée > propriétés > Versions et betas du jeu puis choisir la version opengl du jeu
 
-The instrumented game will load, and wait for instructions via socket communication. With the Python interface you'll be able to instruct it which level to load, along with other parameters.  
-Every frame, the game will send to the Python interface data about Madeline's state. You can then process it (for example with a neural network) and send back to the game the inputs to perform. This cycle will continue until a specified condition is met (death, transition or timeout)  
+### Installer dnSpy
 
-See :
-* The `examples` folder to see how the Python interface can be used
-* The Celeste-NEAT repository for a more complex use case
-* The files `SessionParameters.py` and `SessionData.py` in the folder `CelestePythonInterface/CelestePythonInterface` for more details about the data exchanged.
+dnSpy est un logiciel permettant de débugger et d'éditer du code .NET sans avoir le code source.  
+Le dépôt est disponible ici : https://github.com/dnspy/dnspy
 
-## Installation
+Vous trouverez le code source en arrivant sur la page. Une version compilée de dnSpy est disponible en cliquant sur ```tags``` puis sur le numéro de version.
 
-There is no installer, you'll need to patch the game yourself. Just follow the following instructions on a Windows computer with a XNA version of Celeste.
+### Installer Celeste-Instrumentation
 
-### Necessary files and dnSpy
+Ce dépôt est un fork de hdrien0/Celeste-Instrumentation, qui fonctionnait avec XNA (un vieux framework Microsoft dont le SDK est difficile à trouver).
 
-First, grab the latest release in the `Release` tab of this repository.  
-In addition to the source code, there should be three files :
-* `0Harmony.dll`
-* `CelesteInstrumentation.dll`
-* `InstrumentationParameters.xml`
+Commencer par clôner ce dépôt : ```git clone --recursive [Lien du dépôt].git```
 
-Download them, and then get the latest version of [dnSpy](https://github.com/dnSpyEx/dnSpy/releases) (you'll need that to patch the game binary).
+[Optionnel] Se déplacer vers une version spécifique : ```git checkout tags/[Nom du tag]```
 
-### Patching the game
+Ce dépôt contient plusieurs projets :
+- CelesteInstrumentation : Le patch C# sur le jeu Celeste
+- CelestePythonInterface : Bibliothèque python pour faire l'interface entre le patch C# et python.
 
-* Go to the location of the file `Celeste.exe` (if you have the Steam version it will be something like `C:\Program Files (x86)\Steam\steamapps\common\Celeste\Celeste.exe`).
-* Make a backup copy of `Celeste.exe`, for example `Celeste.exe.old`.
-* Move the three files you donwloaded earlier here.
-* Open `Celeste.exe` in dnSpy.
-* Using the Assembly Explorer of dnSpy (left menu), navigate to `Celeste > Celeste.exe > Celeste > Celeste`. You should get something like the following image :
+> Note: CelestePythonInterface utilise une connexion socket pour communiquer. Il est donc possible d'utiliser n'importe quel langage si on réécrit l'interface.
 
-![Assembly Explorer](https://i.imgur.com/MFFFMRp.png)
+## Étape 2 : Patcher le jeu
 
-* Right click on the code and click `Edit Class`. Press the button with the folder icon (see the image below) and add `0Harmony.dll` and `CelesteInstrumentation.dll`. Then add the following line at the same position as the image below :  
-`Instrumentation.Entry.Execute();`
+### Compiler le patch
 
-![Assembly Explorer](https://i.imgur.com/DF5OFLh.png)
+Vérifier (éventuellement modifier) le chemin de l'exécutable dans `Directory.Build.props`. Pour une installation Steam sur Windows, le dossier du jeu se trouve ici `C:\Program Files (x86)\Steam\steamapps\common\Celeste`.
 
-* Press the `Compile` button, and then press `Ctrl + Shift + S` and `OK` to save the file. You can then close dnSpy. 
+Ouvrir la solution CelesteInstrumentation dans Visual Studio (`CelesteInstrumentation.sln`), puis compiler le projet en utilisant le bouton `Régénérer la solution`.
 
-## Usage
+Si il y a des problèmes à cette étape, m'envoyer un message pour que j'ajoute les éléments manquants (c'est probable).
 
-You can then run `Celeste.exe`. The game will load normally and then wait for instructions.
+Normalement, le projet est configuré pour copier la dll générée directement dans le dossier de jeu pour que le patch s'applique immédiatement.
 
-The global configuration of the instrumented game is done with `InstrumentationParameters.xml`. There you can :
-* Change the speed at which the game executes
-* Disable the game graphics
-* Enable the debug rendering mode
-* Disable instrumentation altogether
+### Placer les fichiers de patch dans le dossier du jeu
 
-To use the Python interface :
+Pour une installation Steam sur Windows, le dossier du jeu contenant `Celeste.exe` se trouve ici `C:\Program Files (x86)\Steam\steamapps\common\Celeste`. Il faut placer plusieurs fichiers dans ce dossier :
 
-### Windows
+- `CelesteInstrumentation.dll` se trouve normalement déjà dans ce dossier (il a été copié automatiquement à l'étape précédente, et sera copié de nouveau à chaque compilation).
+- Copier l'assembly `0Harmony.dll` généré par le projet vers le dossier du jeu. Les assemblys sont normalement générés dans `CelesteInstrumentation\bin\x86\Debug\net4.8`.
+- Copier le fichier `InstrumentationParameters.xml` présent dans le dépôt vers le dossier de jeu
 
-```bash
-python -m venv venv
-venv/Scripts/activate.bat
-pip install CelestePythonInterface
+### Patcher le code
+
+1. Ouvrir `Celeste.exe` dans dnSpy.
+2. Dans l'assembly explorer, naviguer vers `Celeste > Celeste.exe > Celeste > Celeste`
+3. Clic droit sur le code → **Edit Class**
+4. Clic sur l'icône de dossier (**Add reference**) puis ajouter `0Harmony.dll` et `CelesteInstrumentation.dll`
+5. Dans la méthode `Main`, ajouter le code :
+```csharp
+Instrumentation.Entry.Execute();
 ```
+6. Cliquer sur **Compile** (en bas à droite) puis `Ctrl+Shift+S` → **OK** pour sauvegarder
+7. Si il y a erreur lors de la compilation sur `Microsoft.Xna.Framework` ou `Microsoft.Xna.Framework.Game`, c'est que Microsoft XNA Framework Redistributable 4.0 est nécessaire. L'installer, puis revenir dans dnSpy : clic sur l'icône de serveurs (**Add GAC reference**) puis ajouter `Microsoft.Xna.Framework` et `Microsoft.Xna.Framework.Game` et compiler.
+8. Sauvegarder l'assembly modifié et quitter dnSpy
 
-### Linux
+### Configuration du patch
 
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install CelestePythonInterface
-```
+Le patch peut-être configuré ou désactivé à partir du fichier `InstrumentationParameters.xml`.
 
-## Dev environment setup
+## Étape 3 : installer les dépendances python
 
-If you want to edit and build `CelesteInstrumentation.dll` yourself, you'll need to open the `CelesteInstrumentation` solution folder in **Visual Studio 2019**. You'll then need to add the following assembly references to your project :
-* `Celeste.exe`
-* `Microsoft.Xna.Framework`
-* `Microsoft.Xna.Framework.Game`
-* `Microsoft.Xna.Framework.Graphics`
+1. Se déplacer dans `PyCeleste`
+2. Créer un environnement virtuel python :
+`py -3.14 -m venv venv`
+3. Activer l'environnement python. Dans la console :
+`.\venv\Scripts\activate`
+4. Installer les dépendances :
+`python -m pip install -r requirements.txt`
+5. Installer la dépendance CelestePythonInterface : se déplacer dans le dépôt vers `CelestePythonInterface` (il doit y avoir un `setup.py` dans le dossier), puis exécuter : `python -m pip install .`
+6.  
 
-## Contributing
+## Étape 4 : faire tourner un agent minimal
 
-There is a lot of room for improvement, don't hesite to contriibute to this project.
+Un exemple d'agent se trouve dans le dossier `PyCeleste`. Cet agent minimal écoute les entrées clavier pour les retranscrire dans le jeu en mouvement. À vous de remplacer ces entrées manuelles par un réel agent IA.
+
+En ayant l'environnement python activé, lancer `python .\PyCeleste\main.py`.
+
+**Ensuite**, démarrer le jeu Celeste (depuis Steam par exemple). Si tout c'est bien passé, le jeu démarre avec la version modifiée, et vous pourrez clairement voir les carrés rouges de debug sur l'écran.
