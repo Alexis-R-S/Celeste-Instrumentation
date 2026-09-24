@@ -171,7 +171,6 @@ namespace Instrumentation
             return new Tuple<int, int>(xMapTile, yMapTile);
         }
 
-
         private void BuildOccupancyMap(Tuple<int, int> occupancyMapPosition, Level level)
         {
             for (int xOcc=0; xOcc < PlayerState.OccupancyMapSize; xOcc++)
@@ -191,7 +190,7 @@ namespace Instrumentation
 		{
 			Vector2 position = new Vector2(xTile * PlayerState.TileSize, yTile * PlayerState.TileSize);
 
-			Rectangle collideRect = new Rectangle((int)(position.X - 3), (int)(position.Y-3), 6, 6);
+			Rectangle collideRect = new Rectangle((int)(position.X +2), (int)(position.Y +2), 4, 4);
 
             if (! level.Bounds.Contains((int)position.X, (int)position.Y))
 			{
@@ -202,15 +201,19 @@ namespace Instrumentation
 				}
                 return TerrainChannels.Boundary;
             }
-			
-			if (Scene.CollideCheck<Solid>(collideRect))
-			{
-				return TerrainChannels.Solid;
+
+			foreach (Entity entity in base.Scene.Entities) {
+				if (entity is Solid solid
+					&& Collide.CheckPoint(solid, position)) {
+					return TerrainChannels.Solid;
+				}
+				if (entity is Spikes spikes
+					&& Collide.CheckRect(spikes, collideRect))
+				{
+					return TerrainChannels.Spikes;
+				}
 			}
-			if (Scene.CollideCheck<Spikes>(collideRect))
-			{
-				return TerrainChannels.Spikes;
-			}
+
 			return TerrainChannels.Air;
 		}
     }
