@@ -40,7 +40,6 @@ Can second dash: {player_state[SessionData.CAN_SECOND_DASH.value]}
 Stamina: {player_state[SessionData.STAMINA.value]}
 X_distance_to_objective: {player_state[SessionData.X_DISTANCE_TO_OBJECTIVE.value]}
 Y_distance_to_objective: {player_state[SessionData.Y_DISTANCE_TO_OBJECTIVE.value]}
-Total seconds elapsed: {player_state[SessionData.TOTAL_SECONDS_ELAPSED.value]}
 Seconds elapsed: {player_state[SessionData.SECONDS_ELAPSED.value]}
 Levels finished: {player_state[SessionData.NUMBER_OF_LEVELS_FINISHED.value]}
 X_Occupancy map position: {player_state[SessionData.X_OCCUPANCY_MAP_POSITION.value]}

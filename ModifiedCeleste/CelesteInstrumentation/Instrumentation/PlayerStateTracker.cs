@@ -57,7 +57,6 @@ namespace Instrumentation
 			base.Update();
 			this.FramesElapsed += 1f;
 			this.PlayerState.SecondsElapsed = this.FramesElapsed / 60f;
-			this.PlayerState.TotalSecondsElapsed = this.FramesElapsed / 60f;
 		}
 
 		public override void DebugRender(Camera camera)

@@ -4,7 +4,7 @@ class SocketInterface:
 
     def __init__(self,sock, agent, sessionParameters, preprocessor = lambda x : x):
         self.sock = sock
-        self.IODimensions = (1017, 7)
+        self.IODimensions = (1016, 7)
         self.agent = agent
         self.preprocessor = preprocessor
         self.sessionParameters = sessionParameters

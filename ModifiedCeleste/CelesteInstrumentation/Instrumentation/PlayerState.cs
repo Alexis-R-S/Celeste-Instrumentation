@@ -35,7 +35,6 @@ namespace Instrumentation
                     binaryWriter.Write(this.Stamina);
                     binaryWriter.Write(this.XDistanceToObjective);
                     binaryWriter.Write(this.YDistanceToObjective);
-                    binaryWriter.Write(this.TotalSecondsElapsed);
                     binaryWriter.Write(this.SecondsElapsed);
                     binaryWriter.Write((float)this.FinishedLevelsNumber);
 					binaryWriter.Write(this.XOCcupancyMapPosition);
@@ -70,7 +69,6 @@ namespace Instrumentation
 		public float YDistanceToObjective;
 
 		// Metadata
-		public float TotalSecondsElapsed;	// Total session training time
 		public float SecondsElapsed;		// Since last death/reset
 		public int FinishedLevelsNumber;    // When end on level exit is false, counts number of levels finished
 
