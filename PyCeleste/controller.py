@@ -1,9 +1,10 @@
 import keyboard
+from CelestePythonInterface import SessionData
 
 class Controller:
     """Classe de contrôle pour gérer les actions du joueur dans le jeu Celeste."""
     def __init__(self):
-        pass
+        self.has_displayed = False
 
     def update(self, player_state):
         """Met à jour les actions du joueur en fonction de l'état actuel.
@@ -14,7 +15,34 @@ class Controller:
             Voir SessionData.Inputs pour les détails sur la signification de chaque input.
         """
 
-        print(player_state)  # Affiche l'état actuel du joueur pour le débogage
+        if not self.has_displayed and player_state[SessionData.SECONDS_ELAPSED.value] > 5:
+            print(f"""
+X_position: {player_state[SessionData.X_POSITION.value]}
+Y_position: {player_state[SessionData.Y_POSITION.value]}
+X_velocity: {player_state[SessionData.X_VELOCITY.value]}
+Y_velocity: {player_state[SessionData.Y_VELOCITY.value]}
+Tile size: {player_state[SessionData.TILE_SIZE.value]}
+On ground: {player_state[SessionData.ON_GROUND.value]}
+Can dash: {player_state[SessionData.CAN_DASH.value]}
+Can second dash: {player_state[SessionData.CAN_SECOND_DASH.value]}
+Stamina: {player_state[SessionData.STAMINA.value]}
+X_distance_to_objective: {player_state[SessionData.X_DISTANCE_TO_OBJECTIVE.value]}
+Y_distance_to_objective: {player_state[SessionData.Y_DISTANCE_TO_OBJECTIVE.value]}
+Total seconds elapsed: {player_state[SessionData.TOTAL_SECONDS_ELAPSED.value]}
+Seconds elapsed: {player_state[SessionData.SECONDS_ELAPSED.value]}
+Levels finished: {player_state[SessionData.NUMBER_OF_LEVELS_FINISHED.value]}
+X_Occupancy map position: {player_state[SessionData.X_OCCUPANCY_MAP_POSITION.value]}
+Y_Occupancy map position: {player_state[SessionData.Y_OCCUPANCY_MAP_POSITION.value]}
+
+Boundary raycasts: {player_state[SessionData.BOUNDARY_RAYCASTS.value:SessionData.BOUNDARY_RAYCASTS.value+8]}
+Transition raycasts: {player_state[SessionData.TRANSITION_RAYCASTS.value:SessionData.TRANSITION_RAYCASTS.value+8]}
+Solid raycasts: {player_state[SessionData.SOLID_RAYCASTS.value:SessionData.SOLID_RAYCASTS.value+8]}
+Spikes raycasts: {player_state[SessionData.SPIKES_RAYCASTS.value:SessionData.SPIKES_RAYCASTS.value+8]}
+
+""")
+
+            
+            self.has_displayed = True
 
         # Implémentez votre logique de contrôle ici
         return [

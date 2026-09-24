@@ -14,4 +14,7 @@ while True:     # Control goes back here after each player death
     print("\n=== Session terminée ===")
     print(f"Frames écoulées   : {final_state[SessionData.NUMBER_OF_LEVELS_FINISHED.value]}")
     print(f"Temps (s)         : {final_state[SessionData.SECONDS_ELAPSED.value]:.2f}")
-    print(f"Distance objectif : {final_state[SessionData.DISTANCE_TO_OBJECTIVE.value]:.1f}")
+    print(f"Distance objectif X: {final_state[SessionData.X_DISTANCE_TO_OBJECTIVE.value]:.1f}")
+    print(f"Distance objectif Y: {final_state[SessionData.Y_DISTANCE_TO_OBJECTIVE.value]:.1f}")
+
+    controller.has_displayed = False  # Reset the display flag for the next session
