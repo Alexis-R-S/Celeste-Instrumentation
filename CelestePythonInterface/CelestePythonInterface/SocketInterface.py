@@ -4,7 +4,7 @@ class SocketInterface:
 
     def __init__(self,sock, agent, sessionParameters, preprocessor = lambda x : x):
         self.sock = sock
-        self.IODimensions = (26,7)
+        self.IODimensions = (1016, 7)
         self.agent = agent
         self.preprocessor = preprocessor
         self.sessionParameters = sessionParameters
@@ -30,12 +30,12 @@ class SocketInterface:
 
         try :
             while True:
-                receivedData = self.sock.recv(2048)
+                receivedData = self.sock.recv(4096)
 
                 try:
                     if (receivedData.decode("ASCII") == "END"):
                         self.sock.sendall(bytes(1))
-                        finalData = self.sock.recv(2048)
+                        finalData = self.sock.recv(4096)
 
                         finalPlayerState = struct.unpack(f"{str(self.IODimensions[0])}f", finalData)
                         self.sock.sendall(bytes(1))
