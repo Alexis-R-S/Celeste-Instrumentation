@@ -6,6 +6,18 @@ class Controller:
     def __init__(self):
         self.has_displayed = False
 
+    def to_symbol(self, terrain_channel):
+        if terrain_channel == 0:    # Air
+            return " "
+        elif terrain_channel == 1:  # Boundary
+            return "."
+        elif terrain_channel == 2:  # Transition
+            return "@"
+        elif terrain_channel == 3:  # Solid
+            return "O"
+        elif terrain_channel == 4:  # Spikes
+            return "^"
+
     def update(self, player_state):
         """Met à jour les actions du joueur en fonction de l'état actuel.
         Args:
@@ -38,9 +50,10 @@ Boundary raycasts: {player_state[SessionData.BOUNDARY_RAYCASTS.value:SessionData
 Transition raycasts: {player_state[SessionData.TRANSITION_RAYCASTS.value:SessionData.TRANSITION_RAYCASTS.value+8]}
 Solid raycasts: {player_state[SessionData.SOLID_RAYCASTS.value:SessionData.SOLID_RAYCASTS.value+8]}
 Spikes raycasts: {player_state[SessionData.SPIKES_RAYCASTS.value:SessionData.SPIKES_RAYCASTS.value+8]}
-
 """)
-
+            print("Occupancy map:")
+            for i in range(31):
+                print("".join(map(self.to_symbol, player_state[SessionData.OCCUPANCY_MAP.value+i*31:SessionData.OCCUPANCY_MAP.value+(i+1)*31])))
             
             self.has_displayed = True
 

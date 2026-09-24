@@ -42,8 +42,14 @@ namespace Instrumentation
             }
 
 			// TODO : local occupancy map
+			Tuple<int, int> occupancyMapPosition = this.GetOccupancyMapPosition(this.Player.Position);
+            this.PlayerState.XOCcupancyMapPosition = occupancyMapPosition.Item1*PlayerState.TileSize;
+			this.PlayerState.YOCcupancyMapPosition = occupancyMapPosition.Item2*PlayerState.TileSize;
 
-			if (Instrumentation.inSession)
+            this.BuildOccupancyMap(occupancyMapPosition, level);
+
+
+            if (Instrumentation.inSession)
             {
 				InputsManager.ScheduleKeys(InputsManager.ByteToKeys(Socket.SendAndReceiveData(this.PlayerState.Serialize())[0]));
 			}
@@ -75,7 +81,23 @@ namespace Instrumentation
 			}
 			string text = ((int)this.Player.Position.X).ToString() + ", " + ((int)this.Player.Position.Y).ToString();
 			Draw.Text(Draw.DefaultFont, text, this.Player.Position, Color.White);
-			base.DebugRender(camera);
+
+			int xTile = (int)Math.Floor(PlayerState.XPosition / 8);
+            int yTile = (int) Math.Floor((PlayerState.YPosition-1) / 8);
+
+			Draw.HollowRect(
+				xTile*8,
+				yTile*8,
+				8f,
+				8f,
+				Color.Purple
+			);
+
+			Draw.HollowRect((float)PlayerState.XOCcupancyMapPosition, (float)PlayerState.YOCcupancyMapPosition, 8f, 8f, Color.Purple);
+            Draw.HollowRect((float)(PlayerState.XOCcupancyMapPosition+ 8*30 ), (float)(PlayerState.YOCcupancyMapPosition+8*30), 8f, 8f, Color.Purple);
+            Draw.HollowRect((float)(PlayerState.XOCcupancyMapPosition + 8 * 30), (float)(PlayerState.YOCcupancyMapPosition), 8f, 8f, Color.Purple);
+            Draw.HollowRect((float)(PlayerState.XOCcupancyMapPosition), (float)(PlayerState.YOCcupancyMapPosition + 8 * 30), 8f, 8f, Color.Purple);
+            base.DebugRender(camera);
 		}
 
 		public PlayerStateTracker(Player player) : base(true, true)
@@ -137,5 +159,59 @@ namespace Instrumentation
 		{
             return new Vector2(1f, 0f).Rotate(2 * (float)Math.PI * ray_index / PlayerState.RaycastsAmount);
         }
-	}
+
+        private Tuple<int, int> GetOccupancyMapPosition(Vector2 playerPosition)
+        {
+            int xPlayerTile = (int)Math.Floor(PlayerState.XPosition / PlayerState.TileSize);
+            int yPlayerTile = (int)Math.Floor((PlayerState.YPosition - 1) / PlayerState.TileSize);
+
+            int xMapTile = xPlayerTile - (PlayerState.OccupancyMapSize - 1) / 2;
+            int yMapTile = yPlayerTile - (PlayerState.OccupancyMapSize - 1) / 2;
+
+            return new Tuple<int, int>(xMapTile, yMapTile);
+        }
+
+
+        private void BuildOccupancyMap(Tuple<int, int> occupancyMapPosition, Level level)
+        {
+            for (int xOcc=0; xOcc < PlayerState.OccupancyMapSize; xOcc++)
+			{
+				for (int yOcc=0; yOcc < PlayerState.OccupancyMapSize; yOcc++)
+				{
+					PlayerState.SetOccupancyMap(
+						xOcc,
+						yOcc,
+						GetChannelAt(xOcc + occupancyMapPosition.Item1, yOcc + occupancyMapPosition.Item2, level)
+					);
+				}
+			}
+        }
+
+		private TerrainChannels GetChannelAt(int xTile, int yTile, Level level)
+		{
+			Vector2 position = new Vector2(xTile * PlayerState.TileSize, yTile * PlayerState.TileSize);
+
+			Rectangle collideRect = new Rectangle((int)(position.X - 3), (int)(position.Y-3), 6, 6);
+
+            if (! level.Bounds.Contains((int)position.X, (int)position.Y))
+			{
+                // If can transition to another level
+                if (level.Session.MapData.CanTransitionTo(level, position))
+				{
+					return TerrainChannels.Transition;
+				}
+                return TerrainChannels.Boundary;
+            }
+			
+			if (Scene.CollideCheck<Solid>(collideRect))
+			{
+				return TerrainChannels.Solid;
+			}
+			if (Scene.CollideCheck<Spikes>(collideRect))
+			{
+				return TerrainChannels.Spikes;
+			}
+			return TerrainChannels.Air;
+		}
+    }
 }

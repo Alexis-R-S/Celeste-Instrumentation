@@ -8,9 +8,10 @@ namespace CelesteInstrumentation.Instrumentation
 {
     public enum TerrainChannels
     {
-        Boundary = 0,
-        Transition = 1,
-        Solid = 2,
-        Spikes = 3,
+        Air = 0,
+        Boundary = 1,
+        Transition = 2,
+        Solid = 3,
+        Spikes = 4,
     }
 }

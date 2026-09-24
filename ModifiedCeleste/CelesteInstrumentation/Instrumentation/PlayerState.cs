@@ -14,7 +14,7 @@ namespace Instrumentation
 		public PlayerState()
 		{
             this.Raycasts = new int[RaycastsAmount * TerrainChannelsAmount];
-			this.OccupancyMap = new int[OccupancyMapSize * OccupancyMapSize * TerrainChannelsAmount];
+			this.OccupancyMap = new int[OccupancyMapSize * OccupancyMapSize];
 		}
 
 		public byte[] Serialize()
@@ -102,6 +102,29 @@ namespace Instrumentation
         public float XOCcupancyMapPosition;		// Position of occupancy map on level
 		public float YOCcupancyMapPosition;
         // Flattened local egocentric occupancy map
+		// [x0y0, x1y0, x2y0, ...
+		// x0y1, x1y1, x2y1, ...
+		// x0y2, x1y2, x2y2, ... ]
         public int[] OccupancyMap;
+
+		public int GetOccupancyMap(int xPosition, int yPosition)
+		{
+            checkOccupancyMapRange(xPosition, yPosition);
+            return OccupancyMap[yPosition*OccupancyMapSize + xPosition];
+		}
+
+        public void SetOccupancyMap(int xPosition, int yPosition, TerrainChannels channel)
+        {
+            checkOccupancyMapRange(xPosition, yPosition);
+            OccupancyMap[yPosition * OccupancyMapSize + xPosition] = (int) channel;
+        }
+
+		private void checkOccupancyMapRange(int xPosition, int yPosition)
+		{
+			if (yPosition * OccupancyMapSize + xPosition >= OccupancyMapSize*OccupancyMapSize)
+			{
+                throw new IndexOutOfRangeException($"Position ({xPosition}, {yPosition}) is out of range.");
+            }
+		}
     }
 }
